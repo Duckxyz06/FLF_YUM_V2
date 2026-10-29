@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thống kê Đoàn viên – Khoa Ngoại ngữ</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--ink:#1b2437;--mut:#667085;--line:#e1e6ef;--pri:#1f5fbf;--pri2:#e8f0fd;--ok:#127a43;--okb:#e3f6ec;--warn:#a15c00;--warnb:#fff2dc;--bad:#b42318;--badb:#fde8e6;--gray:#475467;--grayb:#eceff4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI",Roboto,Arial,sans-serif}
+header{background:#12306b;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:650;flex:1;min-width:220px}
+header small{opacity:.75;font-weight:400;display:block;font-size:12px}
+nav{background:#fff;border-bottom:1px solid var(--line);display:flex;gap:2px;padding:0 14px;overflow:auto;position:sticky;top:0;z-index:5}
+nav button{border:0;background:none;padding:12px 16px;font:inherit;font-weight:600;color:var(--mut);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:var(--pri);border-color:var(--pri)}
+main{max-width:1320px;margin:0 auto;padding:18px 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.card h2{font-size:15px;margin:0 0 10px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat b{display:block;font-size:26px;line-height:1.1}.stat span{color:var(--mut);font-size:12.5px}
+.stat.ok b{color:var(--ok)}.stat.warn b{color:var(--warn)}.stat.bad b{color:var(--bad)}.stat.pri b{color:var(--pri)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut);font-weight:600}
+input,select,textarea{font:inherit;padding:7px 9px;border:1px solid #c9d1df;border-radius:7px;background:#fff;color:var(--ink);min-width:0}
+button.b{font:inherit;font-weight:600;padding:7px 13px;border-radius:7px;border:1px solid #c9d1df;background:#fff;cursor:pointer;color:var(--ink)}
+button.b:hover{background:#f1f4f9}button.p{background:var(--pri);border-color:var(--pri);color:#fff}button.p:hover{background:#184c99}
+button.d{color:var(--bad);border-color:#f0b8b2}button:disabled{opacity:.45;cursor:not-allowed}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border:1px solid #c9d1df;border-radius:99px;background:#fff;cursor:pointer;font-weight:600;color:var(--gray)}
+.chip.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:#f0f3f9;position:sticky;top:0;z-index:1;font-size:12px;text-transform:none}
+td.n,th.n{text-align:right}td.c,th.c{text-align:center}
+tr.sub td{background:#f6f8fc;font-weight:700}tr.tot td{background:#e8f0fd;font-weight:700}
+tr.click{cursor:pointer}tr.click:hover td{background:#f7faff}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:650}
+.t-dat{background:var(--okb);color:var(--ok)}.t-chuadat{background:var(--warnb);color:var(--warn)}.t-chua{background:var(--grayb);color:var(--gray)}.t-loi{background:var(--badb);color:var(--bad)}
+.note{color:var(--mut);font-size:12.5px}.warnbox{background:var(--warnb);border:1px solid #f1d49b;color:#6b3f00;padding:9px 12px;border-radius:8px;margin-bottom:12px;font-size:13px}
+.bar{height:8px;background:var(--grayb);border-radius:9px;overflow:hidden;min-width:70px}.bar i{display:block;height:100%;background:var(--ok)}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:flex-start;justify-content:center;padding:30px 12px;overflow:auto;z-index:50}
+.modal>div{background:#fff;border-radius:12px;max-width:980px;width:100%;padding:18px 20px}
+.modal h3{margin:0 0 10px}.mf{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.ok-t{color:var(--ok);font-weight:650}.bad-t{color:var(--bad);font-weight:650}.warn-t{color:var(--warn);font-weight:650}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#12306b;color:#fff;padding:10px 18px;border-radius:9px;z-index:99;max-width:90vw}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
+.hide{display:none!important}
+.adminonly{display:none}body.admin .adminonly{display:revert}body.admin button.adminonly{display:inline-block}
+@media(max-width:640px){main{padding:12px 10px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Thống kê Đoàn viên<small>Đoàn khoa Ngoại ngữ · Khóa 2023 – 2026</small></h1>
+  <a class="b" style="color:#fff;text-decoration:none;opacity:.85" href="https://quanlydoanvien.doanthanhnien.vn" target="_blank" rel="noopener">Mở hệ thống YUM ↗</a>
+  <span id="adminState" class="note" style="color:#cfe0ff"></span>
+  <button class="b" id="btnAdmin">🔐 Đăng nhập Admin</button>
+</header>
+<nav id="tabs">
+  <button data-t="overview" class="on">Tổng quan đoàn viên</button>
+  <button data-t="contest">Thống kê cuộc thi</button>
+  <button data-t="errors">Đoàn viên bị lỗi</button>
+  <button data-t="data" class="adminonly">Dữ liệu &amp; Sao lưu</button>
+</nav>
+<main>
+<section id="tab-overview"></section>
+<section id="tab-contest" class="hide"></section>
+<section id="tab-errors" class="hide"></section>
+<section id="tab-data" class="hide"></section>
+</main>
+<div id="modalRoot"></div>
+<script src="vendor/exceljs.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="data.js"></script>
+<script>
+"use strict";
+/* ========== tiện ích ========== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nz=s=>String(s||'').normalize('NFC').replace(/\s+/g,' ').trim().toUpperCase();
+const noAcc=s=>nz(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/Đ/g,'D');
+const khoaOf=c=>{const m=/(\d{2})[A-Z]?$/.exec(c||'');return m?2000+ +m[1]:0};
+const pad=n=>String(n).padStart(2,'0');
+const fmtNow=()=>{const d=new Date();return `${pad(d.getHours())}:${pad(d.getMinutes())} ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`};
+const fmtIso=s=>{const d=new Date(s);return isNaN(d)?'':`${pad(d.getHours())}:${pad(d.getMinutes())} ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`};
+const stamp=()=>{const d=new Date();return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`};
+const titleCase=s=>String(s||'').toLowerCase().replace(/(^|\s)(\S)/gu,(m,a,b)=>a+b.toUpperCase());
+function toast(msg,ms=3200){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+function modal(html,onMount){const r=$('#modalRoot');r.innerHTML=`<div class="modal"><div>${html}</div></div>`;onMount&&onMount(r);return r}
+const closeModal=()=>$('#modalRoot').innerHTML='';
+function hashStr(s){ // SHA-256 nếu có, nếu không dùng hash đơn giản
+  if(window.crypto&&crypto.subtle){return crypto.subtle.digest('SHA-256',new TextEncoder().encode('yum|'+s)).then(b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''))}
+  let h=5381;for(const c of 'yum|'+s)h=((h<<5)+h+c.charCodeAt(0))|0;return Promise.resolve('x'+h)}
+
+/* ========== lưu trữ IndexedDB ========== */
+const IDB={db:null,open(){return new Promise((res,rej)=>{const q=indexedDB.open('yum-thongke',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>{this.db=q.result;res()};q.onerror=()=>rej(q.error)})},
+ get(k){return new Promise(r=>{const q=this.db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r(undefined)})},
+ set(k,v){return new Promise((res,rej)=>{const t=this.db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}};
+
+function pick(accept,multiple,cb){const i=document.createElement('input');i.type='file';i.accept=accept;i.multiple=!!multiple;i.style.display='none';document.body.appendChild(i);i.onchange=async()=>{const f=[...i.files];i.remove();if(f.length)await cb(f)};i.click()}
+/* ========== trạng thái ========== */
+let S={members:[],errors:[],contests:[],registry:[],settings:{pwd:null,lastBackup:null}};
+let admin=false, snaps=[];
+const clone=o=>JSON.parse(JSON.stringify(o));
+const dataOnly=()=>({app:'yum-thongke',version:1,exportedAt:new Date().toISOString(),members:S.members,errors:S.errors,contests:S.contests,registry:S.registry});
+async function persist(){await IDB.set('state',S)}
+async function commit(label){ // tự động sao lưu trạng thái TRƯỚC khi thay đổi
+  snaps.unshift({time:new Date().toISOString(),label,json:JSON.stringify(dataOnly())});snaps=snaps.slice(0,6);
+  try{await IDB.set('snaps',snaps)}catch(e){console.warn(e)}}
+async function save(){try{await persist()}catch(e){toast('Không lưu được vào trình duyệt: '+e.message+' – hãy tải file sao lưu JSON!',6000)}renderAll()}
+
+/* ========== tính toán ========== */
+const chiCode=u=>nz(u).replace(/^CHI ĐOÀN /,'');
+function memberIndex(){
+  const a=new Map(),b=new Map();
+  for(const m of S.members){const k=m.chi+'|'+nz(m.ten),k2=m.chi+'|'+noAcc(m.ten);(a.get(k)||a.set(k,[]).get(k))?.push(m);(b.get(k2)||b.set(k2,[]).get(k2))?.push(m)}
+  return {a,b}}
+const scoreNum=s=>{const m=/(\d+(?:[.,]\d+)?)\s*\/\s*(\d+)/.exec(s||'');return m?+m[1].replace(',','.'):-1};
+const timeVal=t=>{const m=/(\d+):(\d+)\s+(\d+)\/(\d+)\/(\d+)/.exec(t||'');return m?new Date(+m[5],+m[4]-1,+m[3],+m[1],+m[2]).getTime():0};
+const better=(x,y)=>{const dx=x[4]==='Đạt',dy=y[4]==='Đạt';if(dx!==dy)return dx?x:y;return scoreNum(x[5])>=scoreNum(y[5])?x:y};
+const memo=new WeakMap();
+function computeContest(c){
+  if(memo.has(c)&&memo.get(c).v===S._v)return memo.get(c).r;
+  const idx=memberIndex(),res=new Map(),unmatched=[],outside=[],seen=new Set(),groups=new Map();
+  const byId=new Map(S.members.map(m=>[m.id,m]));
+  for(const r of c.rows){
+    const dk=r.join('|');if(seen.has(dk))continue;seen.add(dk);
+    const chi=chiCode(r[1]),key=chi+'|'+nz(r[0]);
+    const ov=c.overrides&&c.overrides[key];
+    if(ov&&byId.has(ov)){push(res,byId.get(ov),r,'gán tay');continue}
+    if(!/^CHI ĐOÀN /.test(nz(r[1]))||khoaOf(chi)<2023){outside.push(r);continue}
+    let ms=idx.a.get(chi+'|'+nz(r[0]));if(!ms)ms=idx.b.get(chi+'|'+noAcc(r[0]));
+    if(!ms){unmatched.push({r,key,chi});continue}
+    const gk=ms[0].id;(groups.get(gk)||groups.set(gk,{ms,rows:[]}).get(gk)).rows.push(r)}
+  for(const {ms,rows} of groups.values()){
+    if(ms.length===1){for(const r of rows)push(res,ms[0],r,'')}
+    else{rows.sort((x,y)=>timeVal(x[3])-timeVal(y[3]));rows.slice(0,ms.length).forEach((r,i)=>push(res,ms[i],r,'Trùng tên trong chi đoàn – cần kiểm tra'))}}
+  const out={res,unmatched,outside};memo.set(c,{v:S._v,r:out});return out}
+function push(res,m,r,flag){const o=res.get(m.id);const st=r[4]==='Đạt'?'dat':'chuadat';
+  if(!o){res.set(m.id,{st,score:r[5],time:r[3],n:1,flag,row:r})}
+  else{o.n++;const b=better(o.row,r);if(b===r){o.st=st;o.score=r[5];o.time=r[3];o.row=r}}}
+const members_active=()=>S.members;
+const chiKeys=()=>{const set=new Set(S.registry);S.members.forEach(m=>set.add(m.chi));S.errors.forEach(e=>e.chi&&set.add(e.chi));return [...set].filter(c=>khoaOf(c)).sort((a,b)=>khoaOf(b)-khoaOf(a)||a.localeCompare(b,'vi'))};
+const sex=m=>m.nam?'Nam':m.nu?'Nữ':'';
+const dob=m=>m.nam||m.nu||'';
+
+/* ========== TAB: tổng quan ========== */
+let ovF={khoa:new Set([2026,2025,2024,2023]),q:''};
+function renderOverview(){
+  const el=$('#tab-overview'),keys=chiKeys();
+  const per={};keys.forEach(c=>per[c]={n:0,nam:0,nu:0,loi:0});
+  S.members.forEach(m=>{const p=per[m.chi]||(per[m.chi]={n:0,nam:0,nu:0,loi:0});p.n++;if(m.nam)p.nam++;else if(m.nu)p.nu++});
+  S.errors.forEach(e=>{if(per[e.chi])per[e.chi].loi++});
+  const miss=keys.filter(c=>!per[c].n);
+  const tot=S.members.length;
+  const khoas=[2026,2025,2024,2023];
+  const q=ovF.q.toLowerCase();
+  let rows='',gt={n:0,nam:0,nu:0,loi:0,c:0};
+  for(const k of khoas){ if(!ovF.khoa.has(k))continue;
+    const cs=keys.filter(c=>khoaOf(c)===k&&(!q||c.toLowerCase().includes(q)||('k'+k).includes(q)));if(!cs.length)continue;
+    const s={n:0,nam:0,nu:0,loi:0};cs.forEach(c=>{for(const f in s)s[f]+=per[c][f]});
+    rows+=`<tr class="sub"><td colspan="2">Khóa ${k} (K${k%100}) – ${cs.length} chi đoàn</td><td class="n">${s.n}</td><td class="n">${s.nam}</td><td class="n">${s.nu}</td><td class="n">${s.loi}</td></tr>`;
+    cs.forEach((c,i)=>{const p=per[c];rows+=`<tr><td class="c">${i+1}</td><td>${esc(c)}${p.n?'':' <span class="tag t-loi">Chưa có dữ liệu</span>'}</td><td class="n">${p.n}</td><td class="n">${p.nam}</td><td class="n">${p.nu}</td><td class="n">${p.loi||''}</td></tr>`});
+    for(const f in s)gt[f]+=s[f];gt.c+=cs.length}
+  rows+=`<tr class="tot"><td colspan="2">TỔNG CỘNG (${gt.c} chi đoàn)</td><td class="n">${gt.n}</td><td class="n">${gt.nam}</td><td class="n">${gt.nu}</td><td class="n">${gt.loi}</td></tr>`;
+  el.innerHTML=`
+  <div class="grid" style="margin-bottom:14px">
+    <div class="stat pri"><b>${tot}</b><span>Tổng đoàn viên (đã loại các trường hợp lỗi)</span></div>
+    <div class="stat"><b>${keys.length-miss.length}/${keys.length}</b><span>Chi đoàn có dữ liệu</span></div>
+    <div class="stat"><b>${S.members.filter(m=>m.nam).length}</b><span>Nam</span></div>
+    <div class="stat"><b>${S.members.filter(m=>m.nu).length}</b><span>Nữ</span></div>
+    <div class="stat bad"><b>${S.errors.length}</b><span>Đoàn viên bị lỗi (tách riêng)</span></div>
+    <div class="stat"><b>${S.contests.length}</b><span>Cuộc thi đã lưu</span></div>
+  </div>
+  ${miss.length?`<div class="warnbox">⚠ Chi đoàn chưa có dữ liệu đoàn viên: <b>${miss.map(esc).join(', ')}</b>. ${admin?'Vào “Dữ liệu &amp; Sao lưu” để cập nhật bằng file HTML.':'Liên hệ admin để cập nhật.'}</div>`:''}
+  <div class="card"><h2>Số lượng đoàn viên theo khóa / chi đoàn</h2>
+    <div class="row"><div class="chips" id="ovK">${khoas.map(k=>`<span class="chip ${ovF.khoa.has(k)?'on':''}" data-k="${k}">Khóa ${k}</span>`).join('')}<span class="chip" data-k="all">Tất cả</span></div>
+    <input id="ovQ" placeholder="Tìm chi đoàn…" value="${esc(ovF.q)}"><button class="b p" id="ovX">⬇ Xuất Excel</button></div>
+    <div class="tw"><table><thead><tr><th class="c">STT</th><th>Chi đoàn</th><th class="n">Đoàn viên</th><th class="n">Nam</th><th class="n">Nữ</th><th class="n">Bị lỗi (tách riêng)</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  $$('#ovK .chip',el).forEach(c=>c.onclick=()=>{const k=c.dataset.k;if(k==='all')[2026,2025,2024,2023].forEach(x=>ovF.khoa.add(x));else ovF.khoa.has(+k)?ovF.khoa.delete(+k):ovF.khoa.add(+k);renderOverview()});
+  $('#ovQ',el).oninput=e=>{ovF.q=e.target.value;const p=e.target.selectionStart;renderOverview();const i=$('#ovQ');i.focus();i.setSelectionRange(p,p)};
+  $('#ovX',el).onclick=()=>exportOverview(per,khoas.filter(k=>ovF.khoa.has(k)),q);
+}
+
+/* ========== Xuất Excel (ExcelJS) ========== */
+const FONT=(o={})=>({name:'Times New Roman',size:12,...o});
+const BORDER={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+function addTitle(ws,lines,ncol){
+  lines.forEach((l,i)=>{const r=ws.addRow([l.t]);ws.mergeCells(r.number,1,r.number,ncol);const c=r.getCell(1);c.font=FONT({size:l.size||12,bold:!!l.bold,italic:!!l.italic});c.alignment={horizontal:l.left?'left':'center',vertical:'middle',wrapText:true};r.height=l.h||(l.size?l.size*1.7:19)});
+  ws.addRow([])}
+function addTable(ws,head,rows,o={}){
+  const h=ws.addRow(head);h.height=34;h.eachCell(c=>{c.font=FONT({bold:true});c.border=BORDER;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE7ECF5'}}});
+  const hn=h.number;
+  rows.forEach(r=>{const x=ws.addRow(r.v||r);x.eachCell({includeEmpty:true},(c,i)=>{c.font=FONT({bold:!!r.bold});c.border=BORDER;const al=(o.center||[]).includes(i)?'center':'left';c.alignment={horizontal:al,vertical:'middle',wrapText:true};if(r.fc)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:r.fc}}})});
+  ws.views=[{state:'frozen',ySplit:hn}];
+  ws.pageSetup={orientation:'landscape',paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}};
+  ws.headerFooter={oddFooter:'&CTrang &P / &N'};
+}
+async function saveWb(wb,name){const buf=await wb.xlsx.writeBuffer();download(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),name)}
+async function exportOverview(per,khoas,q){
+  const wb=new ExcelJS.Workbook();const ws=wb.addWorksheet('Thống kê đoàn viên');
+  const cols=[7,28,14,10,10,16];cols.forEach((w,i)=>ws.getColumn(i+1).width=w);
+  let n=0;const body=[];
+  for(const k of khoas){const cs=chiKeys().filter(c=>khoaOf(c)===k&&(!q||c.toLowerCase().includes(q)));if(!cs.length)continue;
+    const s={n:0,nam:0,nu:0,loi:0};cs.forEach(c=>{for(const f in s)s[f]+=per[c][f]});n+=s.n;
+    body.push({v:[`Khóa ${k}`,'',s.n,s.nam,s.nu,s.loi],bold:true,fc:'FFF3F5FA'});cs.forEach((c,i)=>body.push([i+1,c,per[c].n,per[c].nam,per[c].nu,per[c].loi||'']))}
+  const T=body.filter(b=>b.bold).reduce((a,b)=>{for(let i=2;i<6;i++)a[i]+=+b.v[i]||0;return a},[0,0,0,0,0,0]);
+  body.push({v:['TỔNG CỘNG','',T[2],T[3],T[4],T[5]],bold:true,fc:'FFE7ECF5'});
+  addTitle(ws,[{t:'THỐNG KÊ SỐ LƯỢNG ĐOÀN VIÊN',size:15,bold:true},{t:'Đoàn khoa Ngoại ngữ – Khóa '+khoas.join(', '),bold:true},{t:'Thời gian xuất file: '+fmtNow(),italic:true},{t:'Tổng số lượng đoàn viên: '+n,bold:true}],6);
+  addTable(ws,['STT','Chi đoàn','Số đoàn viên','Nam','Nữ','Bị lỗi (tách riêng)'],body,{center:[1,3,4,5,6]});
+  await saveWb(wb,`Thong_ke_doan_vien_${stamp()}.xlsx`)}
+
+/* ========== TAB: cuộc thi ========== */
+let cf={cid:null,khoa:new Set([2026,2025,2024,2023]),chi:'',q:'',st:'all',page:0};
+const ST={dat:['Đạt','t-dat'],chuadat:['Chưa đạt','t-chuadat'],chua:['Chưa làm','t-chua'],loi:['Bị lỗi','t-loi']};
+const STF=[['all','Tổng hợp (đã làm + chưa làm)'],['done','Đã làm (đạt + chưa đạt)'],['dat','Đã làm – Đạt'],['chuadat','Đã làm – Chưa đạt'],['chua','Chưa làm'],['loi','Bị lỗi']];
+function contestView(){
+  const c=S.contests.find(x=>x.cid===cf.cid);if(!c)return null;
+  const {res,unmatched,outside}=computeContest(c);
+  const inScope=m=>cf.khoa.has(khoaOf(m.chi))&&(!cf.chi||m.chi===cf.chi);
+  const q=nz(cf.q),qa=noAcc(cf.q);
+  const match=m=>!q||nz(m.ten).includes(q)||noAcc(m.ten).includes(qa)||String(m.id).includes(cf.q.trim())||m.chi.includes(q)||('K'+khoaOf(m.chi)%100)===q||String(khoaOf(m.chi))===q;
+  const scope=S.members.filter(inScope).map(m=>{const r=res.get(m.id);return {m,st:r?r.st:'chua',r}});
+  const errScope=S.errors.filter(e=>cf.khoa.has(khoaOf(e.chi))&&(!cf.chi||e.chi===cf.chi));
+  // tổng hợp theo chi đoàn (không phụ thuộc bộ lọc trạng thái / tìm kiếm)
+  const per=new Map();chiKeys().filter(k=>cf.khoa.has(khoaOf(k))&&(!cf.chi||k===cf.chi)).forEach(k=>per.set(k,{chi:k,n:0,dat:0,chuadat:0,chua:0,loi:0}));
+  scope.forEach(x=>{const p=per.get(x.m.chi);if(p){p.n++;p[x.st]++}});errScope.forEach(e=>{const p=per.get(e.chi);if(p)p.loi++});
+  const tot={n:scope.length,dat:0,chuadat:0,chua:0,loi:errScope.length};scope.forEach(x=>tot[x.st]++);
+  let list;
+  if(cf.st==='loi')list=errScope.filter(e=>match(e)).map(e=>({m:e,st:'loi',r:null,err:e}));
+  else list=scope.filter(x=>match(x.m)&&(cf.st==='all'||(cf.st==='done'?x.st!=='chua':x.st===cf.st)));
+  return {c,res,unmatched,outside,scope,per,tot,list,errScope}}
+function renderContest(){
+  const el=$('#tab-contest');
+  if(!S.contests.length){el.innerHTML=`<div class="card"><h2>Chưa có cuộc thi nào</h2><p class="note">${admin?'Bấm nút bên dưới để tải file cuộc thi (.zip hoặc .xlsx).':'Admin cần đăng nhập để tải file cuộc thi.'}</p>${admin?'<button class="b p" id="upC">⬆ Tải file cuộc thi</button>':''}</div>`;$('#upC')&&($('#upC').onclick=uploadContest);return}
+  if(!S.contests.some(x=>x.cid===cf.cid))cf.cid=S.contests[0].cid;
+  const v=contestView(),{tot,per}=v;
+  const khoas=[2026,2025,2024,2023];
+  const chis=chiKeys().filter(k=>cf.khoa.has(khoaOf(k)));
+  if(cf.chi&&!chis.includes(cf.chi))cf.chi='';
+  const PS=100,pages=Math.max(1,Math.ceil(v.list.length/PS));if(cf.page>=pages)cf.page=pages-1;
+  const pr=n=>tot.n?(n*100/tot.n).toFixed(1)+'%':'0%';
+  const rowsHtml=v.list.slice(cf.page*PS,(cf.page+1)*PS).map((x,i)=>{const m=x.m,t=ST[x.st];
+    return `<tr><td class="c">${cf.page*PS+i+1}</td><td>${esc(m.ten)}</td><td>${esc(m.id)}</td><td class="c">${esc(dob(m))}</td><td class="c">${sex(m)}</td><td class="c">${khoaOf(m.chi)}</td><td>${esc(m.chi)}</td><td><span class="tag ${t[1]}">${t[0]}</span>${x.err?' '+esc(x.err.lydo):''}${x.r&&x.r.flag?` <span class="warn-t" title="${esc(x.r.flag)}">⚠</span>`:''}</td><td class="c">${x.r?esc(x.r.score):''}</td><td>${x.r?esc(x.r.time):''}</td></tr>`}).join('');
+  el.innerHTML=`
+  <div class="card">
+    <div class="row">
+      <label class="f">Cuộc thi<select id="cSel">${S.contests.map(c=>`<option value="${c.cid}" ${c.cid===cf.cid?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+      <button class="b p adminonly" id="upC" style="align-self:flex-end">⬆ Tải file cuộc thi</button>
+      <button class="b adminonly" id="renC" style="align-self:flex-end">✎ Đổi tên</button>
+      <button class="b d adminonly" id="delC" style="align-self:flex-end">🗑 Xóa cuộc thi</button>
+    </div>
+    <div class="row"><div><div class="note" style="margin-bottom:4px;font-weight:600">Khóa</div><div class="chips" id="cK">${khoas.map(k=>`<span class="chip ${cf.khoa.has(k)?'on':''}" data-k="${k}">Khóa ${k}</span>`).join('')}<span class="chip" data-k="all">Tổng tất cả</span></div></div></div>
+    <div class="row">
+      <label class="f">Chi đoàn<select id="cChi"><option value="">Tất cả chi đoàn</option>${chis.map(k=>`<option ${k===cf.chi?'selected':''}>${esc(k)}</option>`).join('')}</select></label>
+      <label class="f">Tìm tên / mã định danh / chi đoàn / khóa<input id="cQ" value="${esc(cf.q)}" placeholder="VD: Trúc, 8345574, ĐHTQ25A, K24" style="min-width:260px"></label>
+      <label class="f">Bộ lọc<select id="cSt">${STF.map(s=>`<option value="${s[0]}" ${cf.st===s[0]?'selected':''}>${s[1]}</option>`).join('')}</select></label>
+      <button class="b p" id="cX" style="align-self:flex-end">⬇ Xuất Excel</button>
+    </div>
+  </div>
+  <div class="grid" style="margin-bottom:14px">
+    <div class="stat pri"><b>${tot.n}</b><span>Tổng đoàn viên (phạm vi chọn)</span></div>
+    <div class="stat ok"><b>${tot.dat+tot.chuadat}</b><span>Đã làm · ${pr(tot.dat+tot.chuadat)}</span></div>
+    <div class="stat ok"><b>${tot.dat}</b><span>Đạt · ${pr(tot.dat)}</span></div>
+    <div class="stat warn"><b>${tot.chuadat}</b><span>Chưa đạt · ${pr(tot.chuadat)}</span></div>
+    <div class="stat"><b>${tot.chua}</b><span>Chưa làm · ${pr(tot.chua)}</span></div>
+    <div class="stat bad"><b>${tot.loi}</b><span>Bị lỗi (không tính vào tổng)</span></div>
+  </div>
+  <div class="card"><h2>Chi tiết · <span class="note">${v.list.length} đoàn viên theo bộ lọc</span></h2>
+    <div class="tw"><table><thead><tr><th class="c">STT</th><th>Họ và tên</th><th>Mã định danh</th><th class="c">Ngày sinh</th><th class="c">Giới tính</th><th class="c">Khóa</th><th>Chi đoàn</th><th>Trạng thái</th><th class="c">Điểm</th><th>Thời gian nộp bài</th></tr></thead><tbody>${rowsHtml||'<tr><td colspan="10" class="c note">Không có dữ liệu</td></tr>'}</tbody></table></div>
+    <div class="pager"><button class="b" id="pgP" ${cf.page?'':'disabled'}>‹</button><span>Trang ${cf.page+1}/${pages}</span><button class="b" id="pgN" ${cf.page<pages-1?'':'disabled'}>›</button></div></div>
+  <div class="card"><h2>Tổng hợp theo chi đoàn <span class="note">(bấm vào dòng để lọc chi đoàn)</span></h2>
+    <div class="tw"><table><thead><tr><th>Chi đoàn</th><th class="n">Sĩ số</th><th class="n">Đạt</th><th class="n">Chưa đạt</th><th class="n">Chưa làm</th><th class="n">Bị lỗi</th><th>Tỷ lệ đã làm</th></tr></thead><tbody>${[...per.values()].map(p=>`<tr class="click" data-chi="${esc(p.chi)}"><td>${esc(p.chi)}${p.n?'':' <span class="tag t-loi">Chưa có dữ liệu</span>'}</td><td class="n">${p.n}</td><td class="n">${p.dat}</td><td class="n">${p.chuadat}</td><td class="n">${p.chua}</td><td class="n">${p.loi||''}</td><td><div class="bar"><i style="width:${p.n?(p.dat+p.chuadat)*100/p.n:0}%"></i></div></td></tr>`).join('')}</tbody></table></div></div>
+  ${v.unmatched.length||v.outside.length?`<div class="card"><h2>Dòng trong file cuộc thi không khớp CSDL</h2>
+   <p class="note">${v.outside.length} dòng thuộc đơn vị ngoài CSDL (Đoàn khoa / khóa ≤ 2022) – không thống kê. ${v.unmatched.length} dòng thuộc chi đoàn trong CSDL nhưng không tìm thấy đoàn viên cùng tên (đổi chi đoàn, sai chính tả, hoặc chi đoàn chưa có dữ liệu).</p>
+   ${v.unmatched.length?`<div class="tw" style="max-height:300px"><table><thead><tr><th>Họ và tên</th><th>Đơn vị</th><th>Trạng thái</th><th>Điểm</th><th class="adminonly"></th></tr></thead><tbody>${v.unmatched.map((u,i)=>`<tr><td>${esc(u.r[0])}</td><td>${esc(u.r[1])}</td><td>${esc(u.r[4])}</td><td>${esc(u.r[5])}</td><td class="adminonly"><button class="b" data-asg="${i}">Gán đoàn viên…</button></td></tr>`).join('')}</tbody></table></div>`:''}</div>`:''}`;
+  $('#cSel').onchange=e=>{cf.cid=e.target.value;cf.page=0;renderContest()};
+  $$('#cK .chip').forEach(c=>c.onclick=()=>{const k=c.dataset.k;if(k==='all')khoas.forEach(x=>cf.khoa.add(x));else{cf.khoa.has(+k)?cf.khoa.delete(+k):cf.khoa.add(+k);if(!cf.khoa.size)cf.khoa.add(+k)}cf.page=0;renderContest()});
+  $('#cChi').onchange=e=>{cf.chi=e.target.value;cf.page=0;renderContest()};
+  $('#cSt').onchange=e=>{cf.st=e.target.value;cf.page=0;renderContest()};
+  $('#cQ').oninput=e=>{cf.q=e.target.value;cf.page=0;const p=e.target.selectionStart;renderContest();const i=$('#cQ');i.focus();i.setSelectionRange(p,p)};
+  $("#pgP").onclick=()=>{cf.page--;renderContest()};$("#pgN").onclick=()=>{cf.page++;renderContest()};
+  $$('tr.click',el).forEach(r=>r.onclick=()=>{cf.chi=r.dataset.chi;cf.page=0;renderContest();scrollTo(0,0)});
+  $('#cX').onclick=()=>exportContest(v);
+  $$('[data-asg]',el).forEach(b=>b.onclick=()=>assignDialog(v,v.unmatched[+b.dataset.asg]));
+  if(admin){$('#upC').onclick=uploadContest;$('#renC').onclick=()=>{const n=prompt('Tên cuộc thi:',v.c.name);if(n&&n.trim()){commit('Đổi tên cuộc thi').then(()=>{v.c.name=n.trim();save()})}};
+    $('#delC').onclick=()=>{if(confirm(`Xóa cuộc thi “${v.c.name}”? (Có bản sao lưu tự động để khôi phục)`))commit('Xóa cuộc thi '+v.c.name).then(()=>{S.contests=S.contests.filter(x=>x!==v.c);cf.cid=null;S._v++;save()})}}
+}
+function assignDialog(v,u){
+  modal(`<h3>Gán dòng cuộc thi cho đoàn viên</h3><p><b>${esc(u.r[0])}</b> · ${esc(u.r[1])} · ${esc(u.r[4])} ${esc(u.r[5])}</p>
+  <input id="aq" placeholder="Tìm đoàn viên theo tên / mã…" style="width:100%"><div id="ar" class="tw" style="margin-top:8px;max-height:300px"></div><div class="mf"><button class="b" onclick="closeModal()">Đóng</button></div>`,r=>{
+    const run=()=>{const q=nz($('#aq').value),qa=noAcc($('#aq').value);const l=S.members.filter(m=>q&&(noAcc(m.ten).includes(qa)||String(m.id)===q)).slice(0,40);
+      $('#ar').innerHTML=`<table><tbody>${l.map(m=>`<tr><td>${esc(m.ten)}</td><td>${esc(m.id)}</td><td>${esc(m.chi)}</td><td><button class="b p" data-id="${m.id}">Gán</button></td></tr>`).join('')||'<tr><td class="note">Nhập tên để tìm</td></tr>'}</tbody></table>`;
+      $$('[data-id]',r).forEach(b=>b.onclick=async()=>{await commit('Gán tay dòng cuộc thi');v.c.overrides=v.c.overrides||{};v.c.overrides[u.key]=b.dataset.id;S._v++;closeModal();save();toast('Đã gán')})};
+    $('#aq').oninput=run;$('#aq').value=u.r[0];run()})}
+async function exportContest(v){
+  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Danh sách');
+  [6,28,14,13,10,8,15,22,10,18,18].forEach((w,i)=>ws.getColumn(i+1).width=w);
+  const stName=STF.find(s=>s[0]===cf.st)[1];
+  const scopeTxt=(cf.khoa.size===4?'Tổng tất cả các khóa (2026 – 2023)':'Khóa '+[...cf.khoa].sort((a,b)=>b-a).join(', '))+(cf.chi?' · Chi đoàn '+cf.chi:'')+(cf.q?` · Tìm “${cf.q}”`:'');
+  addTitle(ws,[{t:'THỐNG KÊ CUỘC THI: '+v.c.name.toUpperCase(),size:15,bold:true,h:30},{t:'Phạm vi: '+scopeTxt,bold:true},{t:'Bộ lọc: '+stName,bold:true},{t:'Thời gian xuất file: '+fmtNow(),italic:true},
+    {t:`Số lượng đoàn viên trong danh sách: ${v.list.length}  |  Tổng đoàn viên phạm vi: ${v.tot.n} (Đạt ${v.tot.dat} · Chưa đạt ${v.tot.chuadat} · Chưa làm ${v.tot.chua} · Bị lỗi ${v.tot.loi})`,bold:true}],11);
+  const rows=v.list.map((x,i)=>{const m=x.m;return [i+1,m.ten,m.id,dob(m),sex(m),khoaOf(m.chi),m.chi,ST[x.st][0]+(x.err?' ('+x.err.lydo+')':''),x.r?x.r.score:'',x.r?x.r.time:'',x.r&&x.r.flag?x.r.flag:'']});
+  addTable(ws,['STT','Họ và tên','Mã định danh','Ngày sinh','Giới tính','Khóa','Chi đoàn','Trạng thái','Điểm','Thời gian nộp bài','Ghi chú'],rows,{center:[1,3,4,5,6,7,9,10]});
+  const w2=wb.addWorksheet('Tổng hợp theo chi đoàn');[7,18,10,10,10,10,10,14].forEach((w,i)=>w2.getColumn(i+1).width=w);
+  addTitle(w2,[{t:'TỔNG HỢP THEO CHI ĐOÀN – '+v.c.name.toUpperCase(),size:14,bold:true,h:28},{t:'Phạm vi: '+scopeTxt},{t:'Thời gian xuất file: '+fmtNow(),italic:true},{t:'Số lượng đoàn viên: '+v.tot.n,bold:true}],8);
+  const pr=[...v.per.values()].map((p,i)=>[i+1,p.chi,p.n,p.dat,p.chuadat,p.chua,p.loi||0,p.n?((p.dat+p.chuadat)/p.n*100).toFixed(1)+'%':'']);
+  pr.push({v:['','TỔNG',v.tot.n,v.tot.dat,v.tot.chuadat,v.tot.chua,v.tot.loi,v.tot.n?((v.tot.dat+v.tot.chuadat)/v.tot.n*100).toFixed(1)+'%':''],bold:true,fc:'FFE7ECF5'});
+  addTable(w2,['STT','Chi đoàn','Sĩ số','Đạt','Chưa đạt','Chưa làm','Bị lỗi','Tỷ lệ đã làm'],pr,{center:[1,3,4,5,6,7,8]});
+  await saveWb(wb,`Thong_ke_${noAcc(v.c.name).replace(/[^A-Z0-9]+/g,'_').slice(0,40)}_${stamp()}.xlsx`);toast('Đã xuất file Excel')}
+
+/* ========== tải file cuộc thi ========== */
+const CT_HEAD=['STT','Họ và tên','Đơn vị','Đối tượng','Thời gian nộp bài','Trạng thái','Điểm'];
+async function parseContestXlsx(buf,fileName){
+  const wb=new ExcelJS.Workbook();const chk=[];let rows=[];
+  try{await wb.xlsx.load(buf)}catch(e){return {fileName,chk:[[false,'Không đọc được file Excel: '+e.message]],rows:[]}}
+  const ws=wb.worksheets[0];if(!ws)return {fileName,chk:[[false,'File không có trang tính']],rows:[]};
+  const hd=[1,2,3,4,5,6,7].map(i=>String(ws.getRow(1).getCell(i).value??'').trim());
+  const okH=CT_HEAD.every((h,i)=>hd[i]===h);chk.push([okH,okH?'Đúng form: '+CT_HEAD.join(' | '):'Sai tiêu đề cột. Cần: '+CT_HEAD.join(' | ')+' — Đọc được: '+hd.join(' | ')]);
+  if(!okH)return {fileName,chk,rows};
+  let bad=0;const cv=v=>{if(v==null)return '';if(typeof v==='object'){if(v.richText)return v.richText.map(t=>t.text).join('');if(v.result!=null)return String(v.result);if(v instanceof Date)return `${pad(v.getUTCHours())}:${pad(v.getUTCMinutes())} ${pad(v.getUTCDate())}/${pad(v.getUTCMonth()+1)}/${v.getUTCFullYear()}`}return String(v).trim()};
+  ws.eachRow({includeEmpty:false},(row,n)=>{if(n===1)return;const r=[2,3,4,5,6,7].map(i=>cv(row.getCell(i).value));if(!r[0])return;
+    if(!/^(Đạt|Không đạt)$/.test(r[4])||!/^\d+(?:[.,]\d+)?\s*\/\s*\d+$/.test(r[5])||!/^\d{1,2}:\d{2} \d{1,2}\/\d{1,2}\/\d{4}$/.test(r[3]))bad++;rows.push(r)});
+  chk.push([rows.length>0,`Số dòng dữ liệu: ${rows.length}`]);
+  chk.push([bad===0,bad?`${bad} dòng sai định dạng (Trạng thái phải là “Đạt/Không đạt”, Điểm dạng “160/300”, Thời gian “hh:mm dd/mm/yyyy”)`:'Định dạng Trạng thái / Điểm / Thời gian hợp lệ']);
+  return {fileName,chk,rows,ok:okH&&rows.length>0&&bad===0}}
+function uploadContest(){
+  pick('.zip,.xlsx',true,async files=>{const items=[];
+    for(const f of files){const buf=await f.arrayBuffer();
+      if(/\.zip$/i.test(f.name)){const z=await JSZip.loadAsync(buf,{decodeFileName:b=>new TextDecoder('utf-8').decode(b)});
+        for(const [p,e] of Object.entries(z.files)){if(e.dir||!/\.xlsx$/i.test(p)||/(^|\/)~\$/.test(p))continue;items.push(await parseContestXlsx(await e.async('arraybuffer'),p.split('/').pop()))}}
+      else if(/\.xlsx$/i.test(f.name))items.push(await parseContestXlsx(buf,f.name))}
+    if(!items.length)return toast('Không tìm thấy file .xlsx hợp lệ');
+    reviewContests(items)})}
+function reviewContests(items){
+  items.forEach(it=>{it.name=it.fileName.replace(/\.xlsx$/i,'');it.dup=S.contests.find(c=>c.fileName===it.fileName||nz(c.name)===nz(it.name));
+    if(it.ok){const t={rows:it.rows,overrides:{}};const r=computeContest(t);it.stat={dat:0,chuadat:0,m:r.res.size,un:r.unmatched.length,out:r.outside.length};r.res.forEach(x=>it.stat[x.st]++)}});
+  const html=items.map((it,i)=>`<div class="card" style="border-color:${it.ok?'#b9e3cc':'#f0b8b2'}"><b>📄 ${esc(it.fileName)}</b>
+    ${it.chk.map(c=>`<div class="${c[0]?'ok-t':'bad-t'}">${c[0]?'✔':'✖'} ${esc(c[1])}</div>`).join('')}
+    ${it.ok?`<div class="note" style="margin:6px 0">Khớp CSDL: ${it.stat.m} đoàn viên (Đạt ${it.stat.dat}, Chưa đạt ${it.stat.chuadat}) · không khớp ${it.stat.un} · ngoài CSDL ${it.stat.out}</div>
+    <label class="f">Tên cuộc thi (admin đặt tên)<input data-n="${i}" value="${esc(it.name)}" style="width:100%"></label>
+    ${it.dup?`<div class="warn-t">⚠ Đã có cuộc thi “${esc(it.dup.name)}” – duyệt sẽ GHI ĐÈ cuộc thi đó.</div>`:''}
+    <label style="display:block;margin-top:6px"><input type="checkbox" data-ok="${i}" checked> Duyệt file này</label>`:'<div class="bad-t" style="margin-top:6px">File không đúng form – không thể duyệt.</div>'}</div>`).join('');
+  modal(`<h3>Kiểm tra file cuộc thi</h3>${html}<div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="okC">Duyệt &amp; lưu</button></div>`,r=>{
+    $('#okC').onclick=async()=>{const sel=items.filter((it,i)=>it.ok&&$(`[data-ok="${i}"]`)?.checked);if(!sel.length)return toast('Chưa chọn file nào');
+      for(const it of sel){const i=items.indexOf(it);it.name=$(`[data-n="${i}"]`).value.trim();if(!it.name)return toast('Tên cuộc thi không được để trống')}
+      await commit('Tải cuộc thi');
+      for(const it of sel){const rec={cid:'c'+Date.now()+Math.random().toString(36).slice(2,6),name:it.name,fileName:it.fileName,uploadedAt:new Date().toISOString(),rows:it.rows,overrides:{}};
+        const old=S.contests.find(c=>nz(c.name)===nz(it.name)||c.fileName===it.fileName);if(old){rec.cid=old.cid;S.contests[S.contests.indexOf(old)]=rec}else S.contests.push(rec);cf.cid=rec.cid}
+      S._v++;closeModal();await save();toast(`Đã lưu ${sel.length} cuộc thi`)}})}
+
+/* ========== TAB: đoàn viên bị lỗi ========== */
+const LYDO=['Nghỉ học','Bảo lưu','Thôi học','Chuyển trường','Sai thông tin','Khác'];
+let ef={q:''};
+function renderErrors(){
+  const el=$('#tab-errors');const q=nz(ef.q),qa=noAcc(ef.q);
+  const errs=S.errors.filter(e=>!q||noAcc(e.ten).includes(qa)||String(e.id).includes(ef.q.trim())||nz(e.chi).includes(q));
+  el.innerHTML=`
+  ${admin?`<div class="card"><h2>Đánh dấu đoàn viên bị lỗi</h2><p class="note">Tìm trong danh sách chi đoàn theo tên, mã định danh hoặc chi đoàn → xác nhận. Đoàn viên sẽ được chuyển sang danh sách lỗi, tách khỏi chi đoàn và không được tính trong thống kê cuộc thi.</p>
+   <input id="mq" placeholder="Nhập tên, mã định danh hoặc chi đoàn…" style="width:min(520px,100%)"><div id="mr" style="margin-top:10px"></div></div>`:''}
+  <div class="card"><h2>Danh sách đoàn viên bị lỗi (${S.errors.length})</h2>
+   <div class="row"><input id="eq" placeholder="Lọc danh sách lỗi…" value="${esc(ef.q)}"><button class="b p" id="eDoc">⬇ Xuất Word (.docx)</button>
+   <button class="b adminonly" id="eImp">⬆ Nhập từ file Word (cùng form)</button><span class="note">Xuất ${errs.length} dòng đang hiển thị theo mẫu “Lỗi YUM_Chi đoàn”</span></div>
+   <div class="tw"><table><thead><tr><th class="c">STT</th><th>Họ và tên</th><th>Mã định danh</th><th class="c">Nam</th><th class="c">Nữ</th><th>Email</th><th>SĐT</th><th>Trường hợp lỗi</th><th>Chi đoàn</th><th>Ghi chú</th><th class="adminonly"></th></tr></thead><tbody>
+   ${errs.map((e,i)=>`<tr><td class="c">${i+1}</td><td>${esc(titleCase(e.ten))}</td><td>${esc(e.id)}</td><td class="c">${esc(e.nam)}</td><td class="c">${esc(e.nu)}</td><td>${esc(e.email)}</td><td>${esc(e.sdt)}</td><td>${esc(e.lydo)}</td><td>${esc(e.chi)}</td><td>${esc(e.note||'')}</td><td class="adminonly"><button class="b" data-rs="${esc(e.id)}">Khôi phục</button> <button class="b d" data-dl="${esc(e.id)}">Xóa</button></td></tr>`).join('')||'<tr><td colspan="11" class="c note">Chưa có</td></tr>'}
+   </tbody></table></div></div>`;
+  $('#eq').oninput=e=>{ef.q=e.target.value;const p=e.target.selectionStart;renderErrors();const i=$('#eq');i.focus();i.setSelectionRange(p,p)};
+  $('#eDoc').onclick=()=>exportErrDocx(errs);
+  if(admin){
+    const mq=$('#mq');const run=()=>{const v=mq.value,q=nz(v),qa=noAcc(v);if(!q){$('#mr').innerHTML='';return}
+      const l=S.members.filter(m=>noAcc(m.ten).includes(qa)||String(m.id).includes(v.trim())||m.chi.includes(q)).slice(0,60);
+      $('#mr').innerHTML=`<div class="note">${l.length>=60?'Hiển thị 60 kết quả đầu – hãy gõ cụ thể hơn':l.length+' kết quả'}</div><div class="tw" style="max-height:320px"><table><thead><tr><th>Họ và tên</th><th>Mã định danh</th><th>Ngày sinh</th><th>Chi đoàn</th><th></th></tr></thead><tbody>${l.map(m=>`<tr><td>${esc(m.ten)}</td><td>${esc(m.id)}</td><td>${esc(dob(m))}</td><td>${esc(m.chi)}</td><td><button class="b d" data-mk="${esc(m.id)}">Đánh dấu lỗi</button></td></tr>`).join('')}</tbody></table></div>`;
+      $$('[data-mk]').forEach(b=>b.onclick=()=>markDialog(S.members.find(m=>m.id===b.dataset.mk)))};
+    mq.oninput=run;
+    $$('[data-rs]').forEach(b=>b.onclick=async()=>{const e=S.errors.find(x=>x.id===b.dataset.rs);if(!confirm(`Khôi phục ${e.ten} về chi đoàn ${e.chi}?`))return;await commit('Khôi phục đoàn viên lỗi');
+      S.errors=S.errors.filter(x=>x!==e);if(!S.members.some(m=>m.id===e.id))S.members.push({id:e.id,ten:e.ten,chi:e.chi,nam:e.nam,nu:e.nu,email:e.email,sdt:e.sdt,the:e.the||''});S._v++;save()});
+    $$('[data-dl]').forEach(b=>b.onclick=async()=>{const e=S.errors.find(x=>x.id===b.dataset.dl);if(!confirm(`Xóa hẳn ${e.ten} khỏi danh sách lỗi?`))return;await commit('Xóa khỏi danh sách lỗi');S.errors=S.errors.filter(x=>x!==e);S._v++;save()});
+    $('#eImp').onclick=importErrDocx}}
+function markDialog(m){
+  modal(`<h3>Xác nhận đoàn viên bị lỗi</h3><div class="card"><b>${esc(m.ten)}</b><br>Mã định danh: ${esc(m.id)} · Chi đoàn: ${esc(m.chi)} · Ngày sinh: ${esc(dob(m))}<br><span class="note">${esc(m.email)} ${esc(m.sdt)}</span></div>
+  <div class="row"><label class="f">Trường hợp lỗi<select id="ly">${LYDO.map(l=>`<option>${l}</option>`).join('')}</select></label><label class="f" style="flex:1">Ghi chú thêm (tùy chọn)<input id="gc"></label></div>
+  <p class="note">Đoàn viên sẽ được lưu vào danh sách lỗi, rút khỏi chi đoàn và không còn được thống kê trong các cuộc thi.</p>
+  <div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b d" id="okM">Xác nhận lỗi</button></div>`,()=>{
+    $('#okM').onclick=async()=>{await commit('Đánh dấu lỗi '+m.ten);
+      S.errors.push({id:m.id,ten:m.ten,chi:m.chi,nam:m.nam,nu:m.nu,email:m.email,sdt:m.sdt,the:m.the||'',lydo:$('#ly').value,note:$('#gc').value.trim()});
+      S.members=S.members.filter(x=>x.id!==m.id);S._v++;closeModal();await save();toast('Đã chuyển vào danh sách lỗi')}})}
+
+/* ----- DOCX theo mẫu “Lỗi YUM_Chi đoàn” ----- */
+const X=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function exportErrDocx(errs){
+  if(!errs.length)return toast('Danh sách lỗi đang trống');
+  const rf='<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>';
+  const bd=['top','left','bottom','right'].map(s=>`<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`).join('');
+  const rp=(b,sz)=>`<w:rPr>${rf}${b?'<w:b/><w:bCs/>':''}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/></w:rPr>`;
+  const par=(t,{b=0,sz=22,jc='center',extra=''}={})=>`<w:p><w:pPr><w:spacing w:after="120"/><w:ind w:left="0" w:firstLine="0"/>${extra}<w:jc w:val="${jc}"/>${rp(b,sz)}</w:pPr>${t===''?'':`<w:r>${rp(b,sz)}${String(t).split('\n').map((x,i)=>(i?'<w:br/>':'')+`<w:t xml:space="preserve">${X(x)}</w:t>`).join('')}</w:r>`}</w:p>`;
+  const tc=(w,t,o={})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.span?`<w:gridSpan w:val="${o.span}"/>`:''}${o.vm?`<w:vMerge${o.vm==='r'?' w:val="restart"':''}/>`:''}<w:tcBorders>${bd}</w:tcBorders><w:tcMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tcMar><w:vAlign w:val="center"/></w:tcPr>${par(t,{b:o.b})}</w:tc>`;
+  const W=[630,2550,1260,1425,1560,3045,1500,1695,1590];
+  const H1=['STT','Họ và tên','Mã định danh \nđoàn viên',null,null,'Email liên hệ','Số điện thoại liên hệ','Trường hợp lỗi','Ghi chú'];
+  let h1='<w:tr><w:trPr><w:trHeight w:val="482"/><w:tblHeader/></w:trPr>',h2='<w:tr><w:trPr><w:trHeight w:val="482"/><w:tblHeader/></w:trPr>';
+  H1.forEach((t,i)=>{if(i===3){h1+=tc(W[3]+W[4],'Ngày sinh',{b:1,span:2});h2+=tc(W[3],'Nam',{b:1})+tc(W[4],'Nữ',{b:1})}
+    else if(i===4){}else{h1+=tc(W[i],t,{b:1,vm:'r'});h2+=tc(W[i],'',{b:1,vm:'c'})}});h1+='</w:tr>';h2+='</w:tr>';
+  const body=errs.map((e,i)=>{const v=[i+1,titleCase(e.ten),e.id,e.nam,e.nu,e.email,e.sdt,e.lydo,(e.chi||'')+(e.note?' ('+e.note+')':'')];
+    return `<w:tr><w:trPr><w:trHeight w:val="482"/><w:cantSplit/></w:trPr>${v.map((t,j)=>tc(W[j],t)).join('')}</w:tr>`}).join('');
+  const box=`<w:p><w:pPr><w:spacing w:after="120"/><w:pBdr>${['top','left','bottom','right'].map(s=>`<w:${s} w:val="single" w:sz="4" w:space="4" w:color="000000"/>`).join('')}</w:pBdr><w:ind w:left="11400" w:right="0"/><w:jc w:val="center"/>${rp(0,24)}</w:pPr><w:r>${rp(0,24)}<w:t>Mẫu 01-TTĐV</w:t></w:r></w:p>`;
+  const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${box}${par('DANH SÁCH',{b:1,sz:32})}${par('Các trường hợp lỗi thông tin đoàn viên trên phần mềm quản lý đoàn viên (YUM)',{b:1,sz:28})}${par('',{sz:32,jc:'left'})}
+  <w:tbl><w:tblPr><w:tblW w:w="15255" w:type="dxa"/><w:tblInd w:w="-1035" w:type="dxa"/><w:tblBorders>${bd}<w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>${W.map(w=>`<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>${h1}${h2}${body}</w:tbl>${par('',{sz:32,jc:'left'})}
+  <w:sectPr><w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1418" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const z=new JSZip();
+  z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+  z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  z.file('word/document.xml',doc);
+  download(await z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE'}),`Loi_YUM_Chi_doan_${stamp()}.docx`);toast('Đã xuất file Word')}
+function importErrDocx(){
+  pick('.docx',false,async files=>{try{const z=await JSZip.loadAsync(await files[0].arrayBuffer());const xml=await z.file('word/document.xml').async('string');
+    const d=new DOMParser().parseFromString(xml,'application/xml');const W='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const tbl=d.getElementsByTagNameNS(W,'tbl')[0];if(!tbl)throw new Error('Không có bảng');
+    const out=[];for(const tr of tbl.getElementsByTagNameNS(W,'tr')){const c=[...tr.getElementsByTagNameNS(W,'tc')].map(tc=>[...tc.getElementsByTagNameNS(W,'p')].map(p=>[...p.getElementsByTagNameNS(W,'t')].map(t=>t.textContent).join('')).join(' ').trim());
+      if(c.length<9||!/^\d+$/.test(c[0])||!/^\d+$/.test(c[2]))continue;out.push({id:c[2],ten:nz(c[1]),nam:c[3],nu:c[4],email:c[5],sdt:c[6],lydo:c[7],chi:c[8].replace(/\s*\(.*\)$/,''),note:'',the:''})}
+    if(!out.length)throw new Error('Không đúng form “Lỗi YUM_Chi đoàn” (cần 9 cột: STT, Họ tên, Mã định danh, Nam, Nữ, Email, SĐT, Trường hợp lỗi, Ghi chú)');
+    const uniq=[...new Map(out.map(e=>[e.id,e])).values()],news=uniq.filter(e=>!S.errors.some(x=>x.id===e.id));
+    modal(`<h3>Nhập danh sách lỗi từ file Word</h3><p class="ok-t">✔ Đúng form · ${out.length} dòng (${uniq.length} đoàn viên duy nhất)</p><p>Mới: <b>${news.length}</b> · đã có sẵn: ${uniq.length-news.length}. Các đoàn viên mới sẽ được rút khỏi CSDL chi đoàn (${news.filter(e=>S.members.some(m=>m.id===e.id)).length} người đang có trong CSDL).</p>
+    <div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="okI">Nhập</button></div>`,()=>{$('#okI').onclick=async()=>{await commit('Nhập danh sách lỗi từ Word');
+      news.forEach(e=>{const m=S.members.find(x=>x.id===e.id);if(m)e.the=m.the;S.errors.push(e)});const ids=new Set(news.map(e=>e.id));S.members=S.members.filter(m=>!ids.has(m.id));S._v++;closeModal();await save();toast('Đã nhập '+news.length+' đoàn viên lỗi')}})
+  }catch(e){toast('Lỗi: '+e.message,6000)}})}
+
+/* ========== TAB: dữ liệu & sao lưu (admin) ========== */
+function renderData(){
+  const el=$('#tab-data');if(!admin){el.innerHTML='';return}
+  const lb=S.settings.lastBackup;
+  el.innerHTML=`
+  <div class="card"><h2>① Cập nhật đoàn viên chi đoàn bằng file HTML</h2>
+   <p class="note">Chọn file HTML danh sách đoàn viên lưu từ hệ thống YUM (mỗi chi đoàn một file, hoặc file .zip chứa nhiều file). Hệ thống kiểm tra đúng form, so sánh với dữ liệu hiện có (thêm mới / chuyển đi / giữ nguyên) rồi chờ admin duyệt mới ghi. Đoàn viên đang nằm trong danh sách lỗi sẽ tự động được loại.</p>
+   <button class="b p" id="upH">⬆ Chọn file HTML / ZIP chi đoàn</button></div>
+  <div class="card"><h2>② Sao lưu &amp; khôi phục (JSON)</h2>
+   <p class="${lb&&Date.now()-new Date(lb)<7*864e5?'note':'warn-t'}">Sao lưu thủ công gần nhất: ${lb?fmtIso(lb):'chưa có'} ${lb&&Date.now()-new Date(lb)<7*864e5?'':'— nên tải bản sao lưu mới'}</p>
+   <div class="row"><button class="b p" id="bk">⬇ Tải file sao lưu JSON</button><button class="b" id="rs">⬆ Khôi phục từ file JSON</button></div>
+   <h2 style="margin-top:14px;font-size:14px">Bản sao lưu tự động (tạo trước mỗi thay đổi, giữ 6 bản gần nhất)</h2>
+   ${snaps.length?`<div class="tw" style="max-height:240px"><table><thead><tr><th>Thời gian</th><th>Trước thao tác</th><th>Dung lượng</th><th></th></tr></thead><tbody>${snaps.map((s,i)=>`<tr><td>${fmtIso(s.time)}</td><td>${esc(s.label)}</td><td>${(s.json.length/1048576).toFixed(1)} MB</td><td><button class="b" data-sr="${i}">Khôi phục</button> <button class="b" data-sd="${i}">Tải JSON</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="note">Chưa có bản tự động nào.</p>'}</div>
+  <div class="card"><h2>③ Khác</h2><div class="row"><button class="b" id="pw">🔑 Đổi mật khẩu admin</button><button class="b d" id="rst">↺ Đặt lại về dữ liệu gốc ban đầu</button></div>
+   <p class="note">Dữ liệu lưu trong trình duyệt này (IndexedDB). Nếu đổi máy/trình duyệt, hãy dùng file sao lưu JSON.</p></div>`;
+  $('#upH').onclick=uploadHtml;
+  $('#bk').onclick=async()=>{download(new Blob([JSON.stringify(dataOnly())],{type:'application/json'}),`Sao_luu_doan_vien_${stamp()}.json`);S.settings.lastBackup=new Date().toISOString();await persist();renderData();toast('Đã tải file sao lưu')};
+  $('#rs').onclick=()=>pick('.json',false,async files=>{try{const d=JSON.parse(await files[0].text());if(d.app!=='yum-thongke'||!Array.isArray(d.members))throw new Error('Không phải file sao lưu của hệ thống');
+      if(!confirm(`Khôi phục: ${d.members.length} đoàn viên, ${d.errors.length} lỗi, ${d.contests.length} cuộc thi?\nDữ liệu hiện tại sẽ được sao lưu tự động trước.`))return;await restore(d,'Khôi phục từ file JSON')}catch(e){toast('Lỗi: '+e.message,5000)}});
+  $$('[data-sr]').forEach(b=>b.onclick=async()=>{const s=snaps[+b.dataset.sr];if(confirm('Khôi phục bản '+fmtIso(s.time)+'?'))await restore(JSON.parse(s.json),'Khôi phục bản tự động')});
+  $$('[data-sd]').forEach(b=>b.onclick=()=>{const s=snaps[+b.dataset.sd];download(new Blob([s.json],{type:'application/json'}),`Sao_luu_tu_dong_${stamp()}.json`)});
+  $('#pw').onclick=async()=>{const p=prompt('Mật khẩu mới (tối thiểu 4 ký tự):');if(p&&p.length>=4){S.settings.pwd=await hashStr(p);await persist();toast('Đã đổi mật khẩu')}};
+  $('#rst').onclick=async()=>{if(confirm('Đặt lại toàn bộ về dữ liệu gốc ban đầu? (có sao lưu tự động trước)')){await commit('Đặt lại dữ liệu gốc');loadSeed();await save();toast('Đã đặt lại')}}}
+async function restore(d,label){await commit(label);S.members=d.members;S.errors=d.errors||[];S.contests=d.contests||[];S.registry=d.registry||[];S._v++;await save();toast('Đã khôi phục')}
+
+/* ----- cập nhật đoàn viên từ HTML ----- */
+function parseYumHtml(text,fileName){
+  const chk=[],doc=new DOMParser().parseFromString(text,'text/html');
+  const lt=doc.getElementById('headerlefttable'),bt=doc.getElementById('bodytable');
+  const base=fileName.replace(/\.html?$/i,'');
+  if(!lt||!bt){return {fileName,chk:[[false,'Không đúng form danh sách đoàn viên của hệ thống YUM (thiếu bảng dữ liệu)']],members:[],level:'err'}}
+  const lrows=[...lt.querySelectorAll('tr')].filter(r=>r.querySelector('td.col-big-1')&&r.querySelector('div.truncate[title]'));
+  const brows=[...bt.querySelectorAll('tr')].filter(r=>r.querySelectorAll('td').length>=25);
+  const txt=doc.body.textContent.replace(/\s+/g,' ');
+  const hd=[...bt.querySelectorAll('tr')].filter(r=>r.querySelectorAll('td').length<5).map(r=>r.textContent.replace(/\s+/g,' ').trim()).find(t=>/Chi đoàn/i.test(t))||'';
+  const hm=/Chi đoàn\s+(\S+)\s*\((\d+)\s*đoàn viên\)/i.exec(hd);
+  const pm=/Hiển thị từ (\d+) đến (\d+) của (\d+)/.exec(txt);
+  let level='ok';
+  const chi=hm?nz(hm[1]):nz(base);const declared=hm?+hm[2]:pm?+pm[3]:null;
+  chk.push([!!hm,hm?`Chi đoàn: ${chi} (${declared} đoàn viên theo tiêu đề)`:'Không đọc được tên chi đoàn trong tiêu đề — dùng tên file']);if(!hm)level='warn';
+  if(!khoaOf(chi)){chk.push([false,'Mã chi đoàn không có khóa hợp lệ']);level='err'}
+  if(hm&&/^ĐH/i.test(nz(base))&&nz(base)!==chi){chk.push([false,`Tên file (${nz(base)}) khác chi đoàn trong tiêu đề (${chi}) – có thể đã lưu nhầm trang. Hãy tải lại đúng chi đoàn.`]);level='err'}
+  if(!lrows.length||lrows.length!==brows.length){chk.push([false,`Số dòng tên (${lrows.length}) và dòng dữ liệu (${brows.length}) không khớp / bảng rỗng`]);level='err'}
+  const members=[];
+  if(level!=='err'){lrows.forEach((lr,i)=>{const c=[...brows[i].querySelectorAll('td')].map(t=>t.textContent.replace(/\s+/g,' ').trim());
+    members.push({id:c[0],ten:nz(lr.querySelector('div.truncate[title]').textContent),chi,nam:c[2]||'',nu:c[3]||'',email:c[27]||'',sdt:c[28]||'',the:c[1]||''})});
+    const badId=members.filter(m=>!/^\d{4,}$/.test(m.id)).length;
+    chk.push([badId===0,badId?`${badId} dòng có mã định danh không hợp lệ`:`Đọc được ${members.length} đoàn viên, mã định danh hợp lệ`]);if(badId){level='err'}
+    const dupId=members.length-new Set(members.map(m=>m.id)).size;if(dupId){chk.push([false,`${dupId} mã định danh bị trùng trong file`]);level='err'}
+    if(declared!=null&&declared!==members.length){chk.push([false,`Thiếu dữ liệu: tiêu đề ghi ${declared} đoàn viên nhưng file chỉ có ${members.length} (có thể chưa chọn hiển thị hết các trang)`]);if(level==='ok')level='warn'}}
+  return {fileName,chi,chk,members,level,declared}}
+function uploadHtml(){
+  pick('.html,.htm,.zip',true,async files=>{toast('Đang đọc file…',1500);const items=[];
+    for(const f of files){
+      if(/\.zip$/i.test(f.name)){const z=await JSZip.loadAsync(await f.arrayBuffer(),{decodeFileName:b=>new TextDecoder('utf-8').decode(b)});
+        for(const [p,e] of Object.entries(z.files)){if(e.dir||!/\.html?$/i.test(p))continue;items.push(parseYumHtml(await e.async('string'),p.split('/').pop()));await new Promise(r=>setTimeout(r))}}
+      else{items.push(parseYumHtml(await f.text(),f.name));await new Promise(r=>setTimeout(r))}}
+    if(!items.length)return toast('Không tìm thấy file HTML');
+    reviewHtml(items)})}
+function reviewHtml(items){
+  const errIds=new Set(S.errors.map(e=>e.id));
+  // phát hiện file trùng nội dung với file khác (VD: lưu nhầm cùng một trang cho 2 chi đoàn)
+  const sig=it=>it.members.slice(0,8).map(m=>m.id).join(',');
+  items.forEach((a,i)=>{if(a.level==='err'||!a.members.length)return;
+    items.forEach((b,j)=>{if(j<i&&b.level!=='err'&&b.members.length&&sig(a)===sig(b)){a.level='err';a.chk.push([false,`Nội dung TRÙNG với file “${b.fileName}” (cùng danh sách đoàn viên) – có thể đã lưu nhầm trang. Hãy tải lại đúng chi đoàn.`])}});
+    const byChi=items.filter((b,j)=>j<i&&b.chi===a.chi&&b.level!=='err');if(byChi.length){a.level='err';a.chk.push([false,'Trùng chi đoàn '+a.chi+' với một file khác trong lô này'])}});
+  items.forEach(it=>{if(it.level==='err')return;
+    const cur=S.members.filter(m=>m.chi===it.chi),curIds=new Set(cur.map(m=>m.id)),newM=it.members.filter(m=>!errIds.has(m.id)),newIds=new Set(newM.map(m=>m.id));
+    it.skipErr=it.members.length-newM.length;it.final=newM;
+    it.added=newM.filter(m=>!curIds.has(m.id)).length;it.removed=cur.filter(m=>!newIds.has(m.id)).length;it.keep=newM.length-it.added;it.old=cur.length;
+    it.moved=newM.filter(m=>!curIds.has(m.id)&&S.members.some(x=>x.id===m.id&&x.chi!==it.chi)).length;
+    it.isNew=!S.registry.includes(it.chi)&&!cur.length});
+  const lv={ok:'#b9e3cc',warn:'#f1d49b',err:'#f0b8b2'};
+  const html=items.map((it,i)=>`<div class="card" style="border-color:${lv[it.level]}"><b>📄 ${esc(it.fileName)}</b>${it.chi?` → <b>${esc(it.chi)}</b>`:''}
+   ${it.chk.map(c=>`<div class="${c[0]?'ok-t':'bad-t'}">${c[0]?'✔':'✖'} ${esc(c[1])}</div>`).join('')}
+   ${it.level!=='err'?`<div style="margin:6px 0">Hiện có <b>${it.old}</b> → sau cập nhật <b>${it.final.length}</b> đoàn viên: <span class="ok-t">+${it.added} thêm mới</span> · <span class="${it.removed?'bad-t':'note'}">−${it.removed} không còn trong file</span> · ${it.keep} giữ nguyên${it.moved?` · ${it.moved} chuyển từ chi đoàn khác`:''}${it.skipErr?` · <span class="warn-t">${it.skipErr} đang trong danh sách lỗi (bỏ qua)</span>`:''}${it.isNew?' · <span class="warn-t">chi đoàn mới</span>':''}</div>
+   <label><input type="checkbox" data-hk="${i}" ${it.level==='ok'?'checked':''}> Duyệt cập nhật chi đoàn này${it.level==='warn'?' <span class="warn-t">(có cảnh báo – nên kiểm tra)</span>':''}</label>`:'<div class="bad-t" style="margin-top:6px">Không thể duyệt file này.</div>'}</div>`).join('');
+  const okn=items.filter(i=>i.level!=='err').length;
+  modal(`<h3>Kiểm tra file cập nhật đoàn viên (${items.length} file · ${okn} hợp lệ)</h3>${html}<div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="okH">Duyệt &amp; cập nhật</button></div>`,()=>{
+    $('#okH').onclick=async()=>{const sel=items.filter((it,i)=>it.level!=='err'&&$(`[data-hk="${i}"]`)?.checked);if(!sel.length)return toast('Chưa chọn chi đoàn nào');
+      await commit('Cập nhật đoàn viên từ HTML ('+sel.length+' chi đoàn)');
+      for(const it of sel){const incoming=new Set(it.final.map(m=>m.id));
+        S.members=S.members.filter(m=>m.chi!==it.chi&&!incoming.has(m.id));S.members.push(...it.final);
+        if(!S.registry.includes(it.chi))S.registry.push(it.chi)}
+      // sắp xếp theo thứ tự chi đoàn để giữ thứ tự ổn định
+      const ord=new Map(chiKeys().map((c,i)=>[c,i]));S.members.sort((a,b)=>(ord.get(a.chi)??999)-(ord.get(b.chi)??999));
+      S._v++;closeModal();await save();toast(`Đã cập nhật ${sel.length} chi đoàn · tổng ${S.members.length} đoàn viên`,5000)}})}
+
+/* ========== khởi động / admin ========== */
+function loadSeed(){const d=clone(window.SEED);S.members=d.members;S.errors=d.errors;S.contests=d.contests;S.registry=d.registry}
+function setAdmin(on){admin=on;document.body.classList.toggle('admin',on);$('#btnAdmin').textContent=on?'🔓 Đăng xuất Admin':'🔐 Đăng nhập Admin';$('#adminState').textContent=on?'Chế độ Admin':'';renderAll()}
+$('#btnAdmin').onclick=()=>{if(admin)return setAdmin(false);
+  modal(`<h3>Đăng nhập Admin</h3><input id="pwI" type="password" placeholder="Mật khẩu" style="width:100%"><p class="note">Mật khẩu mặc định: <b>admin123</b> (nên đổi trong “Dữ liệu &amp; Sao lưu”).</p><div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="pwOk">Đăng nhập</button></div>`,()=>{
+    const go=async()=>{if(await hashStr($('#pwI').value)===S.settings.pwd){closeModal();setAdmin(true)}else toast('Sai mật khẩu')};$('#pwOk').onclick=go;$('#pwI').onkeydown=e=>e.key==='Enter'&&go();$('#pwI').focus()})};
+$$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));['overview','contest','errors','data'].forEach(t=>$('#tab-'+t).classList.toggle('hide',t!==b.dataset.t))});
+function renderAll(){
+  if($('#tabs .on')?.dataset.t==='data'&&!admin){$('#tabs button').click()}
+  renderOverview();renderContest();renderErrors();renderData()}
+(async function init(){
+  try{await IDB.open();const st=await IDB.get('state');snaps=(await IDB.get('snaps'))||[];
+    if(st&&st.members){S=st}else{loadSeed();S.settings={pwd:await hashStr('admin123'),lastBackup:null};await persist()}}
+  catch(e){loadSeed();S.settings={pwd:await hashStr('admin123'),lastBackup:null};toast('Trình duyệt không cho lưu dữ liệu – dùng chế độ tạm thời',6000)}
+  S._v=1;S.settings=S.settings||{};if(!S.settings.pwd)S.settings.pwd=await hashStr('admin123');
+  renderAll()})();
+</script>
+</body>
+</html>
