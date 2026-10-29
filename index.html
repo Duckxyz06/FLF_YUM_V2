@@ -468,7 +468,7 @@ function parseYumHtml(text,fileName){
   const chi=hm?nz(hm[1]):nz(base);const declared=hm?+hm[2]:pm?+pm[3]:null;
   chk.push([!!hm,hm?`Chi đoàn: ${chi} (${declared} đoàn viên theo tiêu đề)`:'Không đọc được tên chi đoàn trong tiêu đề — dùng tên file']);if(!hm)level='warn';
   if(!khoaOf(chi)){chk.push([false,'Mã chi đoàn không có khóa hợp lệ']);level='err'}
-  if(hm&&/^ĐH/i.test(nz(base))&&nz(base)!==chi){chk.push([false,`Tên file (${nz(base)}) khác chi đoàn trong tiêu đề (${chi}) – có thể đã lưu nhầm trang. Hãy tải lại đúng chi đoàn.`]);level='err'}
+  const fc=/ĐH[A-ZĐ]*\d{2}[A-Z]/.exec(nz(base));if(hm&&fc&&fc[0]!==chi){chk.push([false,`Tên file (${fc[0]}) khác chi đoàn trong tiêu đề (${chi}) – có thể đã lưu nhầm trang. Hãy tải lại đúng chi đoàn.`]);level='err'}
   if(!lrows.length||lrows.length!==brows.length){chk.push([false,`Số dòng tên (${lrows.length}) và dòng dữ liệu (${brows.length}) không khớp / bảng rỗng`]);level='err'}
   const members=[];
   if(level!=='err'){lrows.forEach((lr,i)=>{const c=[...brows[i].querySelectorAll('td')].map(t=>t.textContent.replace(/\s+/g,' ').trim());
@@ -476,8 +476,8 @@ function parseYumHtml(text,fileName){
     const badId=members.filter(m=>!/^\d{4,}$/.test(m.id)).length;
     chk.push([badId===0,badId?`${badId} dòng có mã định danh không hợp lệ`:`Đọc được ${members.length} đoàn viên, mã định danh hợp lệ`]);if(badId){level='err'}
     const dupId=members.length-new Set(members.map(m=>m.id)).size;if(dupId){chk.push([false,`${dupId} mã định danh bị trùng trong file`]);level='err'}
-    if(declared!=null&&declared!==members.length){chk.push([false,`Thiếu dữ liệu: tiêu đề ghi ${declared} đoàn viên nhưng file chỉ có ${members.length} (có thể chưa chọn hiển thị hết các trang)`]);if(level==='ok')level='warn'}}
-  return {fileName,chi,chk,members,level,declared}}
+    if(pm)chk.push([true,`Trang hiển thị: dòng ${pm[1]}–${pm[2]} / tổng ${pm[3]}`])}
+  return {fileName,chi,chk,members,level,declared:pm?+pm[3]:declared}}
 function uploadHtml(){
   pick('.html,.htm,.zip',true,async files=>{toast('Đang đọc file…',1500);const items=[];
     for(const f of files){
@@ -486,32 +486,40 @@ function uploadHtml(){
       else{items.push(parseYumHtml(await f.text(),f.name));await new Promise(r=>setTimeout(r))}}
     if(!items.length)return toast('Không tìm thấy file HTML');
     reviewHtml(items)})}
-function reviewHtml(items){
+function reviewHtml(files){
   const errIds=new Set(S.errors.map(e=>e.id));
-  // phát hiện file trùng nội dung với file khác (VD: lưu nhầm cùng một trang cho 2 chi đoàn)
-  const sig=it=>it.members.slice(0,8).map(m=>m.id).join(',');
-  items.forEach((a,i)=>{if(a.level==='err'||!a.members.length)return;
-    items.forEach((b,j)=>{if(j<i&&b.level!=='err'&&b.members.length&&sig(a)===sig(b)){a.level='err';a.chk.push([false,`Nội dung TRÙNG với file “${b.fileName}” (cùng danh sách đoàn viên) – có thể đã lưu nhầm trang. Hãy tải lại đúng chi đoàn.`])}});
-    const byChi=items.filter((b,j)=>j<i&&b.chi===a.chi&&b.level!=='err');if(byChi.length){a.level='err';a.chk.push([false,'Trùng chi đoàn '+a.chi+' với một file khác trong lô này'])}});
+  const bad=files.filter(f=>f.level==='err');
+  // gộp các file cùng chi đoàn (nhiều trang) thành một nhóm
+  const gm=new Map();
+  files.filter(f=>f.level!=='err').forEach(f=>{(gm.get(f.chi)||gm.set(f.chi,{chi:f.chi,files:[],chk:[],map:new Map(),declared:0}).get(f.chi)).files.push(f)});
+  const items=[...gm.values()].map(g=>{
+    g.files.forEach(f=>{f.members.forEach(m=>g.map.set(m.id,m));g.declared=Math.max(g.declared,f.declared||0)});
+    g.members=[...g.map.values()];
+    if(g.files.length>1)g.chk.push([true,`Gộp ${g.files.length} file cùng chi đoàn: ${g.files.map(f=>f.fileName).join(', ')}`]);
+    g.complete=!g.declared||g.members.length>=g.declared;
+    g.chk.push([g.complete,g.complete?`Đủ ${g.members.length}/${g.declared||g.members.length} đoàn viên`:`Chưa đủ: có ${g.members.length}/${g.declared} đoàn viên – thiếu ${g.declared-g.members.length} (chưa tải hết các trang). Sẽ chỉ BỔ SUNG, không xóa người hiện có.`]);
+    g.level=g.complete?'ok':'warn';return g});
+  const sig=g=>g.members.slice(0,8).map(m=>m.id).join(',');
+  items.forEach((a,i)=>{items.forEach((b,j)=>{if(j<i&&sig(a)===sig(b)){a.level='err';a.chk.push([false,`Nội dung TRÙNG với chi đoàn ${b.chi} – có thể đã lưu nhầm trang.`])}})});
   items.forEach(it=>{if(it.level==='err')return;
     const cur=S.members.filter(m=>m.chi===it.chi),curIds=new Set(cur.map(m=>m.id)),newM=it.members.filter(m=>!errIds.has(m.id)),newIds=new Set(newM.map(m=>m.id));
-    it.skipErr=it.members.length-newM.length;it.final=newM;
-    it.added=newM.filter(m=>!curIds.has(m.id)).length;it.removed=cur.filter(m=>!newIds.has(m.id)).length;it.keep=newM.length-it.added;it.old=cur.length;
+    it.skipErr=it.members.length-newM.length;it.final=newM;it.supp=!it.complete;
+    it.added=newM.filter(m=>!curIds.has(m.id)).length;it.removed=it.supp?0:cur.filter(m=>!newIds.has(m.id)).length;it.keep=newM.length-it.added;it.old=cur.length;
+    it.after=it.supp?cur.length+it.added:newM.length;
     it.moved=newM.filter(m=>!curIds.has(m.id)&&S.members.some(x=>x.id===m.id&&x.chi!==it.chi)).length;
     it.isNew=!S.registry.includes(it.chi)&&!cur.length});
   const lv={ok:'#b9e3cc',warn:'#f1d49b',err:'#f0b8b2'};
-  const html=items.map((it,i)=>`<div class="card" style="border-color:${lv[it.level]}"><b>📄 ${esc(it.fileName)}</b>${it.chi?` → <b>${esc(it.chi)}</b>`:''}
+  const card=(it,i)=>`<div class="card" style="border-color:${lv[it.level]}"><b>📄 ${it.files.map(f=>esc(f.fileName)).join(' + ')}</b> → <b>${esc(it.chi)}</b>
    ${it.chk.map(c=>`<div class="${c[0]?'ok-t':'bad-t'}">${c[0]?'✔':'✖'} ${esc(c[1])}</div>`).join('')}
-   ${it.level!=='err'?`<div style="margin:6px 0">Hiện có <b>${it.old}</b> → sau cập nhật <b>${it.final.length}</b> đoàn viên: <span class="ok-t">+${it.added} thêm mới</span> · <span class="${it.removed?'bad-t':'note'}">−${it.removed} không còn trong file</span> · ${it.keep} giữ nguyên${it.moved?` · ${it.moved} chuyển từ chi đoàn khác`:''}${it.skipErr?` · <span class="warn-t">${it.skipErr} đang trong danh sách lỗi (bỏ qua)</span>`:''}${it.isNew?' · <span class="warn-t">chi đoàn mới</span>':''}</div>
-   <label><input type="checkbox" data-hk="${i}" ${it.level==='ok'?'checked':''}> Duyệt cập nhật chi đoàn này${it.level==='warn'?' <span class="warn-t">(có cảnh báo – nên kiểm tra)</span>':''}</label>`:'<div class="bad-t" style="margin-top:6px">Không thể duyệt file này.</div>'}</div>`).join('');
-  const okn=items.filter(i=>i.level!=='err').length;
-  modal(`<h3>Kiểm tra file cập nhật đoàn viên (${items.length} file · ${okn} hợp lệ)</h3>${html}<div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="okH">Duyệt &amp; cập nhật</button></div>`,()=>{
+   ${it.level!=='err'?`<div style="margin:6px 0">Hiện có <b>${it.old}</b> → sau cập nhật <b>${it.after}</b> đoàn viên: <span class="ok-t">+${it.added} thêm mới</span> · <span class="${it.removed?'bad-t':'note'}">−${it.removed} không còn trong file</span> · ${it.keep} giữ nguyên${it.moved?` · ${it.moved} chuyển từ chi đoàn khác`:''}${it.skipErr?` · <span class="warn-t">${it.skipErr} đang trong danh sách lỗi (bỏ qua)</span>`:''}${it.isNew?' · <span class="warn-t">chi đoàn mới</span>':''}</div>
+   <label><input type="checkbox" data-hk="${i}" ${it.level==='ok'?'checked':''}> Duyệt cập nhật chi đoàn này${it.supp?' <span class="warn-t">(chỉ bổ sung – chưa đủ trang)</span>':''}</label>`:'<div class="bad-t" style="margin-top:6px">Không thể duyệt.</div>'}</div>`;
+  const html=bad.map(f=>`<div class="card" style="border-color:${lv.err}"><b>📄 ${esc(f.fileName)}</b>${f.chk.map(c=>`<div class="${c[0]?'ok-t':'bad-t'}">${c[0]?'✔':'✖'} ${esc(c[1])}</div>`).join('')}<div class="bad-t" style="margin-top:6px">Không thể duyệt file này.</div></div>`).join('')+items.map(card).join('');
+  modal(`<h3>Kiểm tra file cập nhật đoàn viên (${files.length} file · ${items.filter(i=>i.level!=='err').length} chi đoàn hợp lệ)</h3>${html}<div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="okH">Duyệt &amp; cập nhật</button></div>`,()=>{
     $('#okH').onclick=async()=>{const sel=items.filter((it,i)=>it.level!=='err'&&$(`[data-hk="${i}"]`)?.checked);if(!sel.length)return toast('Chưa chọn chi đoàn nào');
       await commit('Cập nhật đoàn viên từ HTML ('+sel.length+' chi đoàn)');
       for(const it of sel){const incoming=new Set(it.final.map(m=>m.id));
-        S.members=S.members.filter(m=>m.chi!==it.chi&&!incoming.has(m.id));S.members.push(...it.final);
+        S.members=S.members.filter(m=>!incoming.has(m.id)&&(it.supp||m.chi!==it.chi));S.members.push(...it.final);
         if(!S.registry.includes(it.chi))S.registry.push(it.chi)}
-      // sắp xếp theo thứ tự chi đoàn để giữ thứ tự ổn định
       const ord=new Map(chiKeys().map((c,i)=>[c,i]));S.members.sort((a,b)=>(ord.get(a.chi)??999)-(ord.get(b.chi)??999));
       S._v++;closeModal();await save();toast(`Đã cập nhật ${sel.length} chi đoàn · tổng ${S.members.length} đoàn viên`,5000)}})}
 
