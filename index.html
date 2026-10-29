@@ -519,8 +519,14 @@ function reviewHtml(items){
 function loadSeed(){const d=clone(window.SEED);S.members=d.members;S.errors=d.errors;S.contests=d.contests;S.registry=d.registry}
 function setAdmin(on){admin=on;document.body.classList.toggle('admin',on);$('#btnAdmin').textContent=on?'🔓 Đăng xuất Admin':'🔐 Đăng nhập Admin';$('#adminState').textContent=on?'Chế độ Admin':'';renderAll()}
 $('#btnAdmin').onclick=()=>{if(admin)return setAdmin(false);
-  modal(`<h3>Đăng nhập Admin</h3><input id="pwI" type="password" placeholder="Mật khẩu" style="width:100%"><p class="note">Mật khẩu mặc định: <b>admin123</b> (nên đổi trong “Dữ liệu &amp; Sao lưu”).</p><div class="mf"><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="pwOk">Đăng nhập</button></div>`,()=>{
-    const go=async()=>{if(await hashStr($('#pwI').value)===S.settings.pwd){closeModal();setAdmin(true)}else toast('Sai mật khẩu')};$('#pwOk').onclick=go;$('#pwI').onkeydown=e=>e.key==='Enter'&&go();$('#pwI').focus()})};
+  modal(`<h3>Đăng nhập Admin</h3><div class="row" style="flex-wrap:nowrap"><input id="pwI" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Nhập mật khẩu" style="flex:1;font-size:16px"><button class="b" id="pwEye" type="button" title="Ẩn/hiện">👁</button></div>
+  <p class="note">Mật khẩu mặc định: <b>admin123</b> (gõ chữ thường, không dấu cách). Nếu đã đổi mà quên, bấm “Quên mật khẩu” để đặt lại về mặc định — dữ liệu không bị mất.</p>
+  <div class="mf"><button class="b" id="pwFg">Quên mật khẩu</button><button class="b" onclick="closeModal()">Hủy</button><button class="b p" id="pwOk">Đăng nhập</button></div>`,()=>{
+    const inp=$('#pwI');let hide=false;const sync=()=>{inp.style.webkitTextSecurity=hide?'disc':'none'};sync();
+    const go=async()=>{if(await hashStr(inp.value.trim())===S.settings.pwd){closeModal();setAdmin(true)}else{toast('Sai mật khẩu – thử lại (mặc định: admin123)');inp.select()}};
+    $('#pwOk').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing)go()};$('#pwEye').onclick=()=>{hide=!hide;sync()};
+    $('#pwFg').onclick=async()=>{if(confirm('Đặt lại mật khẩu admin về “admin123”?')){S.settings.pwd=await hashStr('admin123');await persist();toast('Đã đặt lại: admin123')}};
+    setTimeout(()=>inp.focus(),50)})};
 $$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));['overview','contest','errors','data'].forEach(t=>$('#tab-'+t).classList.toggle('hide',t!==b.dataset.t))});
 function renderAll(){
   if($('#tabs .on')?.dataset.t==='data'&&!admin){$('#tabs button').click()}
